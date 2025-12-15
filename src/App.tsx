@@ -1,23 +1,30 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/login";
 import Dashboard from "./components/dashboard";
-import { isAuthed } from "./logic/auth";
-import type { ReactNode } from "react";
-
-function PrivateRoute({ children }: { children: ReactNode }) {
-  return isAuthed() ? children : <Navigate to="/" replace />;
-}
+import NotFound from "./components/notfound.tsx";
+import { AuthProvider } from "./logic/auth/AuthProvider";
+import PrivateRoute from "./logic/auth/PrivateRoute";
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route
-          path="/dashboard"
-          element={<PrivateRoute><Dashboard /></PrivateRoute>}
-        />
-      </Routes>
-    </BrowserRouter>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
+
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
+          />
+
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
