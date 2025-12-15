@@ -10,7 +10,7 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
+ // const [busy, setBusy] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || "/dashboard";
 /*
@@ -152,7 +152,7 @@ function submit(e: React.FormEvent) {
                 placeholder="doctor@clinica.mx"
                 autoComplete="username"
                 inputMode="email"
-                disabled={busy}
+ //               disabled={busy}
               />
             </div>
 
@@ -175,7 +175,7 @@ function submit(e: React.FormEvent) {
                 onChange={(e) => setPwd(e.target.value)}
                 placeholder="demo123"
                 autoComplete="current-password"
-                disabled={busy}
+ //               disabled={busy}
               />
             </div>
 
@@ -183,11 +183,11 @@ function submit(e: React.FormEvent) {
 
             <button
               type="submit"
-              disabled={busy}
+ //             disabled={busy}
               className="mt-6 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 py-3 font-medium text-white
                          shadow-lg transition hover:brightness-110 active:scale-[.99] disabled:opacity-70"
             >
-              {busy ? "Validando..." : "Iniciar sesión"}
+              {/* {busy ? "Validando..." : "Iniciar sesión"} */}
             </button>
 
             <div className="mt-4 flex items-center justify-between text-xs text-slate-600">
