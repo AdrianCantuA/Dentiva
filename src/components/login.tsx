@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../logic/auth/AuthProvider";
 
@@ -10,10 +10,17 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [pwd, setPwd] = useState("");
   const [err, setErr] = useState("");
- // const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   const from = (location.state as any)?.from?.pathname || "/dashboard";
-/*
+
+  // Si ya está autenticado, redirige (NO en el render)
+  useEffect(() => {
+    if (auth.status === "authed") {
+      nav(from, { replace: true });
+    }
+  }, [auth.status, from, nav]);
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErr("");
@@ -22,29 +29,20 @@ export default function Login() {
 
     try {
       setBusy(true);
-      await login(email, pwd); // <- aquí validas con backend o demo
-      nav(from, { replace: true });
+      await login(email, pwd);
+      // No necesitas nav() aquí: onAuthChange cambia auth.status y el useEffect redirige
     } catch (e: any) {
+      // Firebase suele traer códigos tipo auth/invalid-credential, etc.
       setErr(e?.message ?? "Credenciales inválidas");
     } finally {
       setBusy(false);
     }
-  }
-*/
-function submit(e: React.FormEvent) {
-  e.preventDefault();
-  setErr("");
-  if (!email || !pwd) return setErr("Completa ambos campos");
+    console.log("API KEY:", import.meta.env.VITE_FIREBASE_API_KEY);
 
-  const ok = login(email, pwd);
-  if (ok) nav(from, { replace: true });
-  else setErr("Credenciales inválidas (password: demo123)");
-}
-
-  // Si ya está autenticado y llegó a /login, mándalo al dashboard (evita ver login otra vez)
-  if (auth.status === "authed") {
-    nav("/dashboard", { replace: true });
   }
+
+  // (Opcional) evita mostrar el form mientras carga auth
+  if (auth.status === "loading") return null;
 
   return (
     <div className="relative min-h-dvh overflow-hidden">
@@ -152,7 +150,7 @@ function submit(e: React.FormEvent) {
                 placeholder="doctor@clinica.mx"
                 autoComplete="username"
                 inputMode="email"
- //               disabled={busy}
+                disabled={busy}
               />
             </div>
 
@@ -175,7 +173,7 @@ function submit(e: React.FormEvent) {
                 onChange={(e) => setPwd(e.target.value)}
                 placeholder="demo123"
                 autoComplete="current-password"
- //               disabled={busy}
+                disabled={busy}
               />
             </div>
 
@@ -183,11 +181,11 @@ function submit(e: React.FormEvent) {
 
             <button
               type="submit"
- //             disabled={busy}
+              disabled={busy}
               className="mt-6 w-full rounded-xl bg-gradient-to-r from-sky-500 to-indigo-500 py-3 font-medium text-white
                          shadow-lg transition hover:brightness-110 active:scale-[.99] disabled:opacity-70"
             >
-              {/* {busy ? "Validando..." : "Iniciar sesión"} */}
+              {busy ? "Validando..." : "Iniciar sesión"}
             </button>
 
             <div className="mt-4 flex items-center justify-between text-xs text-slate-600">

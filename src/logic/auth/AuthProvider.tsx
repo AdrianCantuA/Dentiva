@@ -1,49 +1,72 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import type { User } from "firebase/auth";
+import {
+  login as firebaseLogin,
+  logout as firebaseLogout,
+  onAuthChange,
+} from "./firebaseAuth";
+
+/* =======================
+   Types
+======================= */
 
 type AuthState = {
   status: "loading" | "authed" | "guest";
-  token: string | null;
+  user: User | null;
 };
 
 type AuthContextValue = {
   auth: AuthState;
-  login: (email: string, password: string) => boolean;
-  logout: () => void;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 };
 
-const AuthContext = createContext<AuthContextValue | null>(null);
-const TOKEN_KEY = "dentiva_token";
+/* =======================
+   Context
+======================= */
 
-function readToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+/* =======================
+   Provider
+======================= */
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [auth, setAuth] = useState<AuthState>({ status: "loading", token: null });
+  const [auth, setAuth] = useState<AuthState>({
+    status: "loading",
+    user: null,
+  });
 
+  // Escuchar cambios reales de Firebase
   useEffect(() => {
-    const token = readToken();
-    if (token) setAuth({ status: "authed", token });
-    else setAuth({ status: "guest", token: null });
+    const unsubscribe = onAuthChange((user) => {
+      if (user) {
+        setAuth({ status: "authed", user });
+      } else {
+        setAuth({ status: "guest", user: null });
+      }
+    });
+
+    return unsubscribe;
   }, []);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       auth,
 
-      login: (email: string, password: string) => {
-        // DEMO: password fija
-        if (!email || password !== "demo123") return false;
-
-        const token = `demo-token-${btoa(email)}`;
-        localStorage.setItem(TOKEN_KEY, token);
-        setAuth({ status: "authed", token });
-        return true;
+      login: async (email: string, password: string) => {
+        await firebaseLogin(email, password);
+        // El estado se actualiza automáticamente por onAuthChange
       },
 
-      logout: () => {
-        localStorage.removeItem(TOKEN_KEY);
-        setAuth({ status: "guest", token: null });
+      logout: async () => {
+        await firebaseLogout();
       },
     }),
     [auth]
@@ -52,8 +75,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/* =======================
+   Hook
+======================= */
+
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
   return ctx;
 }
