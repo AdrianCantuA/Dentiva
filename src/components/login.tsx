@@ -12,7 +12,7 @@ export default function Login() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const from = (location.state as any)?.from?.pathname || "/dashboard";
+const from = (location.state as any)?.from?.pathname || "/onboarding";
 
   // Si ya está autenticado, redirige (NO en el render)
   useEffect(() => {
@@ -37,7 +37,6 @@ export default function Login() {
     } finally {
       setBusy(false);
     }
-    console.log("API KEY:", import.meta.env.VITE_FIREBASE_API_KEY);
 
   }
 

@@ -1,30 +1,36 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./components/login";
-import Dashboard from "./components/dashboard";
-import NotFound from "./components/notfound.tsx";
-import { AuthProvider } from "./logic/auth/AuthProvider";
+import { Routes, Route, Navigate } from "react-router-dom";
 import PrivateRoute from "./logic/auth/PrivateRoute";
+
+import Login from "./components/login";
+import Onboarding from "./components/onboarding";
+import Dashboard from "./components/dashboard";
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="/login" element={<Login />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
+      <Route
+        path="/onboarding"
+        element={
+          <PrivateRoute>
+            <Onboarding />
+          </PrivateRoute>
+        }
+      />
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      {/* ✅ La URL queda: dentiva.tech/<slug>/dashboard */}
+      <Route
+        path="/:slug/dashboard"
+        element={
+          <PrivateRoute>
+            <Dashboard />
+          </PrivateRoute>
+        }
+      />
+
+      {/* Opcional: redirección raíz */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
+    </Routes>
   );
 }
