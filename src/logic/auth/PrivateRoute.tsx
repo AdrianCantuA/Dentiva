@@ -74,11 +74,6 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
 
   const hasTenant = !!meState.me?.tenant;
 
-  // Si NO tiene tenant, solo permitimos entrar a /onboarding
-  /*if (!hasTenant && location.pathname !== "/onboarding") {
-    return <Navigate to="/onboarding" replace />;
-  }
-*/
   // Si SÍ tiene tenant y está en /onboarding, lo mandamos al dashboard del tenant
   if (hasTenant && location.pathname === "/onboarding") {
     return <Navigate to={`/${meState.me!.tenant!.slug}/dashboard`} replace />;
