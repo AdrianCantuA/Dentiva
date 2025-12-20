@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../logic/auth/AuthProvider";
+import { apiGet } from "../lib/api";
+
 
 export default function Login() {
   const nav = useNavigate();
@@ -12,14 +14,43 @@ export default function Login() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-const from = (location.state as any)?.from?.pathname || "/onboarding";
+const from = (location.state as any)?.from?.pathname || null;
 
-  // Si ya está autenticado, redirige (NO en el render)
-  useEffect(() => {
-    if (auth.status === "authed") {
-      nav(from, { replace: true });
+useEffect(() => {
+  let cancelled = false;
+
+  async function routeAfterAuth() {
+    if (auth.status !== "authed") return;
+
+    try {
+      const me = await apiGet("/auth/me");
+      if (cancelled) return;
+
+      const slug = me?.tenant?.slug;
+
+      if (!slug) {
+        nav("/onboarding", { replace: true });
+        return;
+      }
+
+      // Si venías de una ruta del mismo tenant, respétala.
+      if (from && from.startsWith(`/${slug}/`)) {
+        nav(from, { replace: true });
+        return;
+      }
+
+      nav(`/${slug}/dashboard`, { replace: true });
+    } catch (e) {
+      if (!cancelled) setErr("No se pudo validar tu sesión con el backend.");
     }
-  }, [auth.status, from, nav]);
+  }
+
+  routeAfterAuth();
+  return () => {
+    cancelled = true;
+  };
+}, [auth.status, from, nav]);
+
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

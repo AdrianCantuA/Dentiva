@@ -19,7 +19,6 @@ export default function App() {
         }
       />
 
-      {/* ✅ La URL queda: dentiva.tech/<slug>/dashboard */}
       <Route
         path="/:slug/dashboard"
         element={
@@ -29,8 +28,8 @@ export default function App() {
         }
       />
 
-      {/* Opcional: redirección raíz */}
       <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

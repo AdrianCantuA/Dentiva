@@ -17,20 +17,20 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
     loading: boolean;
     error: string | null;
     me: MeResponse | null;
-  }>({ loading: true, error: null, me: null });
+  }>({ loading: false, error: null, me: null });
 
-  // 1) Primero: proteger por Firebase
-  if (auth.status === "loading") {
-    return <div className="p-6">Cargando…</div>;
-  }
-
-  if (auth.status !== "authed") {
-    return <Navigate to="/login" replace state={{ from: location }} />;
-  }
-
-  // 2) Segundo: validar tenant/rol con backend
+  // ✅ Hook SIEMPRE se define; adentro decides si corre o no
   useEffect(() => {
     let cancelled = false;
+
+    // Solo corre cuando ya estás authed
+    if (auth.status !== "authed") {
+      // Resetea estado cuando no hay sesión
+      setMeState({ loading: false, error: null, me: null });
+      return;
+    }
+
+    setMeState((s) => ({ ...s, loading: true, error: null }));
 
     (async () => {
       try {
@@ -52,30 +52,38 @@ export default function PrivateRoute({ children }: { children: ReactNode }) {
     };
   }, [auth.status]);
 
+  // ====== RETURNS (después de hooks) ======
+
+  // 1) Primero: proteger por Firebase
+  if (auth.status === "loading") {
+    return <div className="p-6">Cargando…</div>;
+  }
+
+  if (auth.status !== "authed") {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  // 2) Segundo: validar tenant/rol con backend
   if (meState.loading) {
     return <div className="p-6">Validando tenant…</div>;
   }
 
-  // Si falla backend, bloquea (puedes mandar a /login si quieres)
   if (meState.error) {
-    return (
-      <div className="p-6 text-red-400">
-        Error: {meState.error}
-      </div>
-    );
+    return <div className="p-6 text-red-400">Error: {meState.error}</div>;
   }
 
   const hasTenant = !!meState.me?.tenant;
 
   // Si NO tiene tenant, solo permitimos entrar a /onboarding
-  if (!hasTenant && location.pathname !== "/onboarding") {
+  /*if (!hasTenant && location.pathname !== "/onboarding") {
     return <Navigate to="/onboarding" replace />;
   }
-
+*/
   // Si SÍ tiene tenant y está en /onboarding, lo mandamos al dashboard del tenant
   if (hasTenant && location.pathname === "/onboarding") {
     return <Navigate to={`/${meState.me!.tenant!.slug}/dashboard`} replace />;
   }
+  
 
   return <>{children}</>;
 }

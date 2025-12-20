@@ -41,9 +41,7 @@ export default function Onboarding() {
       setErr("Tenant sigue null después del bootstrap. Revisa que se cree el membership en DB.");
       return;
     }
-
-    console.log("[onboarding] navigating to:", `/${slug}/dashboard`);
-    nav(`/${slug}/dashboard`, { replace: true });
+    nav(`/login`, { replace: true });
   } catch (e: any) {
     console.error("[onboarding] error:", e);
     setErr(e?.message ?? "Error creando clínica");
@@ -52,8 +50,6 @@ export default function Onboarding() {
     console.log("[onboarding] end");
   }
 }
-
-
 
   return (
     <div className="p-6 max-w-lg">
